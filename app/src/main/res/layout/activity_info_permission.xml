@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:weightSum="5"
+    android:layout_width="match_parent"
+    android:background="@drawable/infopermissions"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".InfoPermission">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="3.4"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BarCode"
+            android:textColor="#fff"
+            android:textSize="60dp"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reader"
+            android:textColor="#fff"
+            android:textSize="50dp"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            />
+
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1.6"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_margin="30dp"
+            android:textSize="25dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="To scan Barcode or QR code the application needs permission to access your device camera. "
+            android:textColor="#111"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/givePermission"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:background="@drawable/ic_play_circle_filled_black_24dp"
+            />
+
+    </LinearLayout>
+
+
+
+
+
+
+</LinearLayout>
