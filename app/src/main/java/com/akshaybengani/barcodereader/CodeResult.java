@@ -10,16 +10,24 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiConfiguration.KeyMgmt;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.vision.barcode.Barcode;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class CodeResult extends AppCompatActivity implements View.OnClickListener{
 
@@ -130,13 +138,13 @@ public class CodeResult extends AppCompatActivity implements View.OnClickListene
             phoneButton.setEnabled(true);
             phoneButton.setBackgroundResource(R.drawable.phoneicon);
         }
-        if (Patterns.EMAIL_ADDRESS.matcher(stringvalue).matches())
+        int type = barcode.valueFormat;
+        if (type == Barcode.EMAIL)
         {
             // enable the email icon button and set an intent to open email application
             emailButton.setEnabled(true);
             emailButton.setBackgroundResource(R.drawable.emailicon);
         }
-        int type = barcode.valueFormat;
         if (type == Barcode.GEO)
         {
             geoButton.setEnabled(true);
@@ -180,13 +188,13 @@ public class CodeResult extends AppCompatActivity implements View.OnClickListene
                 Intent webIntent = new Intent(Intent.ACTION_VIEW);
                 webIntent.setData(Uri.parse(stringvalue));
                 startActivity(webIntent);
+                break;
             case R.id.phonebutton:
                 Intent callIntent = new Intent(Intent.ACTION_DIAL);
                 callIntent.setData(Uri.parse("tel:"+stringvalue));
                 startActivity(callIntent);
                 break;
             case R.id.emailbutton:
-
                 Intent emailIntent = new Intent(Intent.ACTION_SEND);
                 emailIntent.setType("text/html");
                 emailIntent.putExtra(Intent.EXTRA_EMAIL,stringvalue);
@@ -195,12 +203,26 @@ public class CodeResult extends AppCompatActivity implements View.OnClickListene
                 startActivity(Intent.createChooser(emailIntent,"Send Email"));
                 break;
             case R.id.geobutton:
+                Intent geoIntent = new Intent(Intent.ACTION_VIEW,Uri.parse(stringvalue));
+                geoIntent.setPackage("com.google.android.apps.maps");
+                startActivity(geoIntent);
                 break;
-            case R.id.contactbutton: saveAsAContact(stringvalue);
+            case R.id.contactbutton:
+                saveAsAContact(stringvalue);
                 break;
             case R.id.calenderbutton:
+                Intent calIntent = new Intent(Intent.ACTION_INSERT);
+                calIntent.setData(CalendarContract.Events.CONTENT_URI);
+                startActivity(calIntent);
                 break;
             case R.id.wifibutton:
+                String[] wifiElement;
+                wifiElement = stringvalue.replace("WIFI:", "").split(";");
+                String ssid = getParam(wifiElement[0]);
+                String type = getParam(wifiElement[1]);
+                String pass = getParam(wifiElement[2]);
+                Log.d("type ssid and pass","Type: "+type+" SSID: "+ssid+" Pass: "+pass);
+                connectToWIFI(type,ssid,pass);
                 break;
             case R.id.scanButton:
                 Intent intent1 = new Intent(CodeResult.this,CodeResult.class);
@@ -208,6 +230,39 @@ public class CodeResult extends AppCompatActivity implements View.OnClickListene
                 break;
 
         }// end of switch
+
+    }
+
+    private String getParam(String s) {
+        return s.split(":")[1];
+    }
+
+
+    private void connectToWIFI(String type, String ssid, String pass) {
+
+        WifiConfiguration wifiConfiguration = new WifiConfiguration();
+        wifiConfiguration.SSID = "\"" + ssid + "\"";
+        switch (type) {
+            case "WEP":
+                wifiConfiguration.wepKeys[0] = "\"" + pass + "\"";
+                wifiConfiguration.wepTxKeyIndex = 0;
+                wifiConfiguration.allowedKeyManagement.set(KeyMgmt.NONE);
+                wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                break;
+            case "WPA":
+                wifiConfiguration.preSharedKey = "\"" + pass + "\"";
+                break;
+            case "nopass":
+                wifiConfiguration.allowedKeyManagement.set(KeyMgmt.NONE);
+                break;
+        }
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.addNetwork(wifiConfiguration);
+
+                wifiManager.disconnect();
+                wifiManager.enableNetwork(wifiConfiguration.networkId,true);
+                wifiManager.reconnect();
+                Toast.makeText(CodeResult.this,"Network Profile Added",Toast.LENGTH_SHORT).show();
 
     }
 

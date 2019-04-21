@@ -46,11 +46,11 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_margin="30dp"
-            android:textSize="25dp"
+            android:layout_margin="20dp"
+            android:textSize="20dp"
             android:layout_marginTop="20dp"
             android:gravity="center"
-            android:text="To scan Barcode or QR code the application needs permission to access your device camera. "
+            android:text="To scan Barcode or QR code the application needs permission to access your device camera. And to setup a Wifi Network using QR Code we need your Wifi Permissions. "
             android:textColor="#111"
             android:layout_height="wrap_content" />
 

@@ -5,13 +5,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -22,13 +22,16 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
-import static android.text.TextUtils.concat;
 
 public class CameraPreview extends AppCompatActivity {
 
     SurfaceView surfaceView;
     ImageButton imageButton;
+    boolean flashState = false;
+    CameraSource cameraSource;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +41,69 @@ public class CameraPreview extends AppCompatActivity {
         surfaceView = findViewById(R.id.cameraView);
         imageButton = findViewById(R.id.flashlight);
 
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("CLicked","Flashlight Button Clicked");
+                toggleFlashLight();
+            }
+        });
         createCameraSource();
 
 //        Intent intent =new Intent(this,)
 
+
+    }
+
+    private void toggleFlashLight() {
+        android.hardware.Camera camera = null;
+        camera = getCamera(cameraSource);
+        if (camera != null){
+            try{
+                android.hardware.Camera.Parameters parameters = camera.getParameters();
+
+                if (!flashState){
+                    // State is off and Now turning on
+                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_ON);
+                    camera.setParameters(parameters);
+                    flashState = !flashState;
+                    imageButton.setBackgroundResource(R.drawable.ic_highlight_white_24dp);
+
+                }else {
+                    // State is on and Now turning off
+                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_OFF);                    camera.setParameters(parameters);
+                    camera.setParameters(parameters);
+                    flashState = !flashState;
+                    imageButton.setBackgroundResource(R.drawable.ic_highlight_yellow_24dp);
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+        }
+
+
+
+    }
+
+    private static android.hardware.Camera getCamera(CameraSource cameraSource) {
+
+        Field[] declaredFields = CameraSource.class.getDeclaredFields();
+        for (Field field : declaredFields){
+            if (field.getType() == android.hardware.Camera.class){
+                field.setAccessible(true);
+                try{
+                    android.hardware.Camera camera = (android.hardware.Camera) field.get(cameraSource);
+                    if (camera != null) {
+                        return camera;
+                    }
+                } catch (IllegalAccessException e){
+                    e.printStackTrace();
+                }
+                break;
+            }
+        }
+        return null;
 
     }
 
@@ -50,7 +112,7 @@ public class CameraPreview extends AppCompatActivity {
         // To access Barcode Detection or Google Camera API we need to create an object of the BarcodeDetector class
         final BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(this).build();
         // To build our camera functionality in such a way to access barcode Detection capabilities we need to pass the feature in the Camera Source
-        final CameraSource cameraSource = new CameraSource.Builder(this, barcodeDetector)
+        cameraSource = new CameraSource.Builder(this, barcodeDetector)
                 .setAutoFocusEnabled(true)
                 .setRequestedPreviewSize(1600, 1024)
                 .build();
@@ -88,7 +150,9 @@ public class CameraPreview extends AppCompatActivity {
             public void surfaceDestroyed(SurfaceHolder holder) {
                 cameraSource.stop();
             }
-        });
+
+            });
+
         barcodeDetector.setProcessor(new Detector.Processor<Barcode>() {
             @Override
             public void release() {
@@ -102,15 +166,8 @@ public class CameraPreview extends AppCompatActivity {
                 final SparseArray<Barcode> barcodeSparseArray = detections.getDetectedItems();
                 // Now we have data of our barcode in this array we need to pass this in our next activity or process it
 
-//                int i = 0;
-//                String full = "";
-//                while (i<barcodeSparseArray.size()){
-//                    full = (String) concat(full, (CharSequence) barcodeSparseArray.valueAt(i));
-//                }
-
                 if (barcodeSparseArray.size()>0)
                 {
-
                         Log.d("Array Size", String.valueOf(barcodeSparseArray.size()));
                         /* + barcodeSparseArray.valueAt(i).displayValue*/
                         Log.d("Data", "Value: " + barcodeSparseArray.valueAt(0).rawValue);

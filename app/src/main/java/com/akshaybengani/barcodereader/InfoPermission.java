@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.icu.text.IDNA;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -34,9 +35,13 @@ public class InfoPermission extends AppCompatActivity {
     private void giveMeCamera() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ActivityCompat.requestPermissions(InfoPermission.this,new String[]{Manifest.permission.CAMERA},54);
-        }else{
-            Toast.makeText(InfoPermission.this,"You are under Lollipop you have permissions at install time",Toast.LENGTH_LONG).show();
+
+            ActivityCompat.requestPermissions(InfoPermission.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.CHANGE_WIFI_STATE,Manifest.permission.ACCESS_WIFI_STATE},54);
+
+        } else {
+            Toast.makeText(InfoPermission.this,
+                    "You are under Lollipop you have permissions at install time",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -49,18 +54,27 @@ public class InfoPermission extends AppCompatActivity {
                 if (grantResults.length > 0)
                 {
                     boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean wifiAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    boolean wifiAccess = grantResults[2] == PackageManager.PERMISSION_GRANTED;
 
-                    if (cameraAccepted)
+                    if (cameraAccepted && wifiAccepted && wifiAccess)
                     {
                         // Permission Granted now shift to CameraPreview Activity
                         Intent intent = new Intent(InfoPermission.this,CodeResult.class);
                         startActivity(intent);
                         finish();
+
                     }else{
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA))
+                            if (shouldShowRequestPermissionRationale(Manifest.permission.CHANGE_WIFI_STATE))
                             {
-                                requestPermissions(new String[]{Manifest.permission.CAMERA},54);
+                                Toast.makeText(InfoPermission.this,"You need to allow both of the permissions",Toast.LENGTH_SHORT).show();
+
+                                requestPermissions(new String[]{
+                                        Manifest.permission.CAMERA,
+                                        Manifest.permission.CHANGE_WIFI_STATE
+                                },54);
+
                             }
 
                         }

@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -27,10 +29,13 @@ public class MainActivity extends AppCompatActivity {
                      Intent intent = new Intent(MainActivity.this,InfoPermission.class);
                      startActivity(intent);
                      finish();
+
                 }else{
+
                      Intent intent = new Intent(MainActivity.this,CodeResult.class);
                      startActivity(intent);
                      finish();
+
                 }
 
             }
